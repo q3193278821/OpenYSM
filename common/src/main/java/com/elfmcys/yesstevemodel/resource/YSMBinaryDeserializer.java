@@ -488,10 +488,9 @@ public class YSMBinaryDeserializer implements AutoCloseable{
                 e
             );
         }
-        parseYSMJson();
     }
 
-    private void parseSubEntity(Map<String, RawYsmModel.RawSubEntity> targetMap, String categoryName, int index) {
+    private void parseSubEntity(Map<String, RawYsmModel.RawSubEntity> targetMap, String categoryName, int index) throws YSMParseException {
         RawYsmModel.RawSubEntity subEntity = new RawYsmModel.RawSubEntity();
         String subModuleName = "";
         if (format <= 26) {
@@ -559,7 +558,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         targetMap.put(subEntity.identifier, subEntity);
     }
 
-    private RawYsmModel.RawGeometry parseModels() {
+    private RawYsmModel.RawGeometry parseModels() throws YSMParseException {
         RawYsmModel.RawGeometry geo = new RawYsmModel.RawGeometry();
 
         int boneCount = reader.readVarInt();
@@ -627,7 +626,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         return geo;
     }
 
-    private void parseYSMJson() {
+    private void parseYSMJson() throws YSMParseException {
         model.properties.sha256 = reader.readString();
         int isNewVersionYsm = reader.readVarInt();
 
@@ -785,7 +784,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         model.properties.isFree = reader.readVarInt() != 0;
     }
 
-    private RawYsmModel.RawAnimationFile parseAnimations() {
+    private RawYsmModel.RawAnimationFile parseAnimations() throws YSMParseException {
         RawYsmModel.RawAnimationFile animFile = new RawYsmModel.RawAnimationFile();
 
         int animationCount = reader.readVarInt();
@@ -892,7 +891,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
     }
 
-    private void parseAnimationControllers(List<RawYsmModel.RawAnimationControllerFile> targetList, boolean readName) {
+    private void parseAnimationControllers(List<RawYsmModel.RawAnimationControllerFile> targetList, boolean readName) throws YSMParseException {
         int controllerCount = reader.readVarInt();
         for (int i = 0; i < controllerCount; i++) {
             RawYsmModel.RawAnimationControllerFile file = new RawYsmModel.RawAnimationControllerFile();
@@ -965,7 +964,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
     }
 
-    private void parseSoundFiles() {
+    private void parseSoundFiles() throws YSMParseException {
         int soundCount = reader.readVarInt();
         for (int i = 0; i < soundCount; i++) {
             String soundName = reader.readString();
@@ -978,7 +977,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
     }
 
-    private void parseFunctionFiles() {
+    private void parseFunctionFiles() throws YSMParseException {
         int functionCount = reader.readVarInt();
         for (int i = 0; i < functionCount; i++) {
             String functionName = reader.readString();
@@ -988,7 +987,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
     }
 
-    private void parseLanguageFiles() {
+    private void parseLanguageFiles() throws YSMParseException {
         int languageCount = reader.readVarInt();
         for (int i = 0; i < languageCount; i++) {
             String languageName = reader.readString();
@@ -1002,7 +1001,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
     }
 
-    private void parseTextureFiles(Map<String, RawYsmModel.RawTexture> targetMap) {
+    private void parseTextureFiles(Map<String, RawYsmModel.RawTexture> targetMap) throws YSMParseException {
         int textureCount = reader.readVarInt();
         for (int i = 0; i < textureCount; i++) {
             RawYsmModel.RawTexture tex = new RawYsmModel.RawTexture();
