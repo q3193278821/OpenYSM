@@ -491,6 +491,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
     }
 
     private void parseSubEntity(Map<String, RawYsmModel.RawSubEntity> targetMap, String categoryName, int index) throws YSMParseException {
+        try {
         RawYsmModel.RawSubEntity subEntity = new RawYsmModel.RawSubEntity();
         String subModuleName = "";
         if (format <= 26) {
@@ -556,9 +557,13 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
 
         targetMap.put(subEntity.identifier, subEntity);
+        } catch (Exception e) {
+        throw new YSMParseException("Failed to parse sub entity section", e);
+        }
     }
 
     private RawYsmModel.RawGeometry parseModels() throws YSMParseException {
+        try {
         RawYsmModel.RawGeometry geo = new RawYsmModel.RawGeometry();
 
         int boneCount = reader.readVarInt();
@@ -624,9 +629,13 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         geo.footerPad3 = reader.readVarInt();
 
         return geo;
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse models section", e);
+        }
     }
 
     private void parseYSMJson() throws YSMParseException {
+        try {
         model.properties.sha256 = reader.readString();
         int isNewVersionYsm = reader.readVarInt();
 
@@ -765,6 +774,9 @@ public class YSMBinaryDeserializer implements AutoCloseable{
             bg.unknownFlag = reader.readVarInt();
             model.properties.backgroundImages.add(bg);
         }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse ysm json section", e);
+        }
     }
 
     private void parseLegacyYSMInfo() {
@@ -785,6 +797,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
     }
 
     private RawYsmModel.RawAnimationFile parseAnimations() throws YSMParseException {
+        try {
         RawYsmModel.RawAnimationFile animFile = new RawYsmModel.RawAnimationFile();
 
         int animationCount = reader.readVarInt();
@@ -848,6 +861,9 @@ public class YSMBinaryDeserializer implements AutoCloseable{
         }
 
         return animFile;
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse animations section", e);
+        }
     }
 
     private void parseChannel(List<RawYsmModel.RawKeyframe> channel) {
@@ -892,6 +908,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
     }
 
     private void parseAnimationControllers(List<RawYsmModel.RawAnimationControllerFile> targetList, boolean readName) throws YSMParseException {
+        try {
         int controllerCount = reader.readVarInt();
         for (int i = 0; i < controllerCount; i++) {
             RawYsmModel.RawAnimationControllerFile file = new RawYsmModel.RawAnimationControllerFile();
@@ -906,6 +923,9 @@ public class YSMBinaryDeserializer implements AutoCloseable{
 
             parseAnimationControllerBody(file.controllers);
             targetList.add(file);
+        }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse animation controllers section", e);
         }
     }
 
@@ -965,6 +985,7 @@ public class YSMBinaryDeserializer implements AutoCloseable{
     }
 
     private void parseSoundFiles() throws YSMParseException {
+        try {
         int soundCount = reader.readVarInt();
         for (int i = 0; i < soundCount; i++) {
             String soundName = reader.readString();
@@ -975,9 +996,13 @@ public class YSMBinaryDeserializer implements AutoCloseable{
             byte[] data = reader.readByteArray();
             model.soundFiles.put(soundName, new RawYsmModel.RawDataFile(hash, data));
         }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse sound files section", e);
+        }
     }
 
     private void parseFunctionFiles() throws YSMParseException {
+        try {
         int functionCount = reader.readVarInt();
         for (int i = 0; i < functionCount; i++) {
             String functionName = reader.readString();
@@ -985,9 +1010,13 @@ public class YSMBinaryDeserializer implements AutoCloseable{
             byte[] data = reader.readByteArray();
             model.functionFiles.put(functionName, new RawYsmModel.RawDataFile(hash, data));
         }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse function files section", e);
+        }
     }
 
     private void parseLanguageFiles() throws YSMParseException {
+        try {
         int languageCount = reader.readVarInt();
         for (int i = 0; i < languageCount; i++) {
             String languageName = reader.readString();
@@ -999,9 +1028,13 @@ public class YSMBinaryDeserializer implements AutoCloseable{
             }
             model.languageFiles.put(languageName, new RawYsmModel.RawLanguageFile(hash, langMap));
         }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse language files section", e);
+        }
     }
 
     private void parseTextureFiles(Map<String, RawYsmModel.RawTexture> targetMap) throws YSMParseException {
+        try {
         int textureCount = reader.readVarInt();
         for (int i = 0; i < textureCount; i++) {
             RawYsmModel.RawTexture tex = new RawYsmModel.RawTexture();
@@ -1027,6 +1060,9 @@ public class YSMBinaryDeserializer implements AutoCloseable{
                 tex.subTextures.add(subTex);
             }
             targetMap.put(tex.name, tex);
+        }
+            } catch (Exception e) {
+        throw new YSMParseException("Failed to parse texture files section", e);
         }
     }
 
