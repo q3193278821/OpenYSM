@@ -2,7 +2,7 @@ package rip.ysm.security;
 
 import java.io.Serial;
 
-public class YSMParseException extends Exception {
+public class YSMParseException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = 1L;
