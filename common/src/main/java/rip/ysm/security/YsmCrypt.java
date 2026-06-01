@@ -488,4 +488,19 @@ public class YsmCrypt {
             return YsmZstd.decompress(plainText, zstdOffset, plainText.length - zstdOffset);
         }
     }
+
+    public static int readFormatFromCache(byte[] cacheFileData) {
+    try (YSMByteBuf buf =
+             new YSMByteBuf(Unpooled.wrappedBuffer(cacheFileData))) {
+
+        buf.readVarInt(); // 1
+        buf.readVarInt(); // 2
+        buf.readVarInt(); // 3
+        buf.readVarInt(); // 4
+
+        return buf.readVarInt(); // 5 = format version
+    } catch (Exception e) {
+        return 32; // fallback
+    }
+    }
 }
