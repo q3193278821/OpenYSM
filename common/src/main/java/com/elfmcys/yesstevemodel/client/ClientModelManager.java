@@ -953,7 +953,10 @@ public class ClientModelManager {
                         int coreDataLength;
                         String exportName = file.getName(); // Fallback name
 
-                        try (YSMBinaryDeserializer deserializer = new YSMBinaryDeserializer(clearText, 32)) {
+                        int formatVersion =
+                            YsmCrypt.readFormatFromCache(fileBytes);
+
+                        try (YSMBinaryDeserializer deserializer = new YSMBinaryDeserializer(clearText, formatVersion)) {
                             RawYsmModel rawModel = deserializer.deserializeKeepOpen();
                             coreDataLength = deserializer.getReader().getRawBuf().readerIndex();
 
