@@ -1,12 +1,7 @@
-name: Build and Release
+name: Build
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   build:
@@ -31,19 +26,6 @@ jobs:
           VERSION=$(grep -E '^\s*mod_version\s*=' gradle.properties | sed -E 's/.*=\s*//' | tr -d '[:space:]')
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Mod version: $VERSION"
-
-      - name: Check if release already exists
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: v${{ steps.version.outputs.version }}
-        run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Release $TAG already exists, will skip publishing."
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -73,16 +55,3 @@ jobs:
           path: |
             ${{ steps.artifacts.outputs.fabric }}
             ${{ steps.artifacts.outputs.forge }}
-
-      - name: Create Release
-        if: steps.check.outputs.exists == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: v${{ steps.version.outputs.version }}
-        run: |
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes \
-            --target "${{ github.sha }}" \
-            "${{ steps.artifacts.outputs.fabric }}" \
-            "${{ steps.artifacts.outputs.forge }}"
