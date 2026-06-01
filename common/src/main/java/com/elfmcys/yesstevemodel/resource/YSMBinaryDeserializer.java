@@ -351,22 +351,68 @@ public class YSMBinaryDeserializer implements AutoCloseable{
     }
 
     private void deserializeModern() {
-        parseSoundFiles();
-        parseFunctionFiles();
-        parseLanguageFiles();
+        try {
+            parseSoundFiles();
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in sound files, skipping section",
+                e
+            );
+        }
+        try {
+            parseFunctionFiles();
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in function files, skipping section",
+                e
+            );
+        }
+        try {
+            parseLanguageFiles();
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in language files, skipping section",
+                e
+            );
+        }
 
         if (format < 26) {
             int subEntityTotalCount = reader.readVarInt();
             for (int i = 0; i < subEntityTotalCount; ++i) {
-                parseSubEntity(model.vehicles, "SubEntity", i);
+                try {
+                    parseSubEntity(model.vehicles, "SubEntity", i);
+                } catch (YSMParseException e) {
+                    YesSteveModel.LOGGER.error(
+                        "[YSM] Parse error in sub entity, skipping section",
+                        e
+                    );
+                }
             }
             int footerFlag = reader.readVarInt(); // always 00
         } else {
             int vehiclesTotalCount = reader.readVarInt();
-            for (int i = 0; i < vehiclesTotalCount; ++i) parseSubEntity(model.vehicles, "Vehicle", i);
+            for (int i = 0; i < vehiclesTotalCount; ++i) {
+                try {
+                    parseSubEntity(model.vehicles, "Vehicle", i);
+                } catch (YSMParseException e) {
+                    YesSteveModel.LOGGER.error(
+                        "[YSM] Parse error in sub entity vehicle, skipping section",
+                        e
+                    );
+                }
+            }
 
             int projectilesTotalCount = reader.readVarInt();
-            for (int i = 0; i < projectilesTotalCount; ++i) parseSubEntity(model.projectiles, "Projectile", i);
+            for (int i = 0; i < projectilesTotalCount; ++i) {
+                try {
+                    parseSubEntity(model.projectiles, "Projectile", i);
+                } catch (YSMParseException e) {
+                    YesSteveModel.LOGGER.error(
+                        "[YSM] Parse error in sub entity projectile, skipping section",
+                        e
+                    );
+                }
+            }
         }
 
         int unknownEntityFlag = reader.readVarInt();
@@ -377,33 +423,69 @@ public class YSMBinaryDeserializer implements AutoCloseable{
             int type = reader.readVarInt();
             String hash = reader.readString();
 
-            RawYsmModel.RawAnimationFile animRef = parseAnimations();
-            model.mainEntity.animationFiles.put(
+            try {
+                    RawYsmModel.RawAnimationFile animRef = parseAnimations();
+                model.mainEntity.animationFiles.put(
                     YSMFolderDeserializer.getAnimKeyFromType(type),
                     animRef
             );
             animRef.animType = type;
             animRef.fileHash = hash;
+                } catch (YSMParseException e) {
+                    YesSteveModel.LOGGER.error(
+                        "[YSM] Parse error in animations, skipping section",
+                        e
+                    );
+            }
         }
 
-        parseAnimationControllers(model.mainEntity.animationControllerFiles,true);
-
-        parseTextureFiles(model.mainEntity.textures);
-
+        try {
+            parseAnimationControllers(model.mainEntity.animationControllerFiles,true);
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in animation controllers, skipping section",
+                e
+            );
+        }
+        try {
+            parseTextureFiles(model.mainEntity.textures);
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in texture files, skipping section",
+                e
+            );
+        }
+        
         int modelTotalCount = reader.readVarInt();
         List<RawYsmModel.RawGeometry> tempMainModels = new ArrayList<>();
         for (int i = 0; i < modelTotalCount; ++i) {
             int modelType = reader.readVarInt();
             String hash = reader.readString();
 
-            RawYsmModel.RawGeometry geoRef = parseModels();
+            try {
+                    RawYsmModel.RawGeometry geoRef = parseModels();
             geoRef.sha256 = hash;
             geoRef.modelType = modelType;
             tempMainModels.add(geoRef);
             System.out.println("Model Table Entry: ID=" + modelType + ", Hash=" + hash);
+                } catch (YSMParseException e) {
+                    YesSteveModel.LOGGER.error(
+                        "[YSM] Parse error in geometry, skipping section",
+                        e
+                    );
+            }
+            
         }
         assignMainModels(tempMainModels);
 
+        try {
+            parseYSMJson();
+        } catch (YSMParseException e) {
+            YesSteveModel.LOGGER.error(
+                "[YSM] Parse error in metadata, skipping section",
+                e
+            );
+        }
         parseYSMJson();
     }
 
