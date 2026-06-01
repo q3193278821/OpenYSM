@@ -281,7 +281,10 @@ public class ClientModelManager {
                         try {
                             byte[] fileBytes = Files.readAllBytes(cachedFile.toPath());
                             byte[] decompressed = YsmCrypt.read(fileBytes, clientKey);
-                            parseAndLoadModel(decompressed, modelId, isAuth);
+                            int formatVersion =
+                                YsmCrypt.readFormatFromCache(fileBytes);
+
+                            parseAndLoadModel(decompressed, modelId, isAuth, formatVersion);
                         } catch (Exception e) {
                             YesSteveModel.LOGGER.error("[YSM] Failed to parse and load cached model: " + modelId, e);
                         }
@@ -446,7 +449,10 @@ public class ClientModelManager {
                     YesSteveModel.LOGGER.info("[YSM] Downloaded & Cached: " + outFile.getAbsolutePath());
                     byte[] decompressed = YsmCrypt.read(cachedFileData, clientKey);
 
-                    parseAndLoadModel(decompressed, ctx.modelId, ctx.isAuth);
+                    int formatVersion =
+                        YsmCrypt.readFormatFromCache(cachedFileData);
+
+                    parseAndLoadModel(decompressed, ctx.modelId, ctx.isAuth, formatVersion);
                 } catch (Exception e) {
                     YesSteveModel.LOGGER.error("[YSM] Failed to save/parse downloaded model: " + ctx.modelId, e);
                 } finally {
@@ -460,12 +466,12 @@ public class ClientModelManager {
     }
 
 
-    private static void parseAndLoadModel(byte[] decompressed, String modelId, boolean isAuth) {
+    private static void parseAndLoadModel(byte[] decompressed, String modelId, boolean isAuth, int formatVersion) {
         try {
 //            if (true) return;
             // IR
 
-            try (YSMBinaryDeserializer deserializer = new YSMBinaryDeserializer(decompressed, 32)) {
+            try (YSMBinaryDeserializer deserializer = new YSMBinaryDeserializer(decompressed, formatVersion)) {
                 RawYsmModel rawModel = deserializer.deserializeKeepOpen();
                 YSMByteBuf reader = deserializer.getReader();
 
