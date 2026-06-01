@@ -974,7 +974,8 @@ public class ClientModelManager {
 
                             outBuf.getRawBuf().writeBytes(clearText, 0, coreDataLength);
 
-                            outBuf.writeVarInt(32); // Version
+                            //outBuf.writeVarInt(32); // Version
+                            outBuf.writeVarInt(formatVersion);
                             outBuf.writeVarInt(1);
 
                             byte[] randBytes = new byte[8];
